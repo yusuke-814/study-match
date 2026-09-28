@@ -1,12 +1,16 @@
 import { useState } from "react";
 
-function SearchForm() {
+type SearchFormProps = {
+    onSearch: (keyword: string) => void;
+};
+
+function SearchForm({ onSearch }: SearchFormProps) {
     const [keyword, setKeyword] = useState("");
 
     const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();  // フォームのデフォルトの送信動作を防ぐ
 
-        console.log("検索キーワード:", keyword);
+        onSearch(keyword);
     };
 
     return (
