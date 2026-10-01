@@ -6,15 +6,47 @@ import { useState } from "react";
 
 function HomePage() {
     const [searchKeyword, setSearchKeyword] = useState("");
+    const [searchStudyField, setSearchStudyField] = useState("");
+    const [searchLocation, setSearchLocation] = useState("");
+    const [searchStudyTime, setSearchStudyTime] = useState("");
+
+    const handleSearch = (
+        keyword: string,
+        studyField: string,
+        location: string,
+        studyTime: string
+    ) => {
+        setSearchKeyword(keyword);
+        setSearchStudyField(studyField);
+        setSearchLocation(location);
+        setSearchStudyTime(studyTime);
+    };
 
     const filteredUsers = mockUsers.filter((user) => {  // filter: 配列の中の要素を条件に基づいてフィルタリングするメソッド
-        if (searchKeyword === ""){
-            return true; // 検索キーワードが空の場合は全てのユーザーを表示
-        }
+        const matchesKeyword = 
+            searchKeyword === "" || 
+            user.studyFields.some((field) =>
+                field.toLowerCase().includes(searchKeyword.toLowerCase())
+            );
         
-        return user.studyFields.some((field) =>  // some: 配列の中の要素が条件を満たすかどうかをチェックするメソッド
-            field.toLowerCase().includes(searchKeyword.toLowerCase())  // includes: 文字列が特定の文字列を含むかどうかをチェックするメソッド
-        );  // studyFieldsの中に検索キーワードが含まれていた場合にtrueを返す
+        const matchesStudyField =
+            searchStudyField === "" ||
+            user.studyFields.includes(searchStudyField);
+
+        const matchesLocation =
+            searchLocation === "" ||
+            user.location === searchLocation;
+
+        const matchesStudyTime =
+            searchStudyTime === "" ||
+            user.studyTime === searchStudyTime;
+        
+        return (
+            matchesKeyword &&
+            matchesStudyField &&
+            matchesLocation &&
+            matchesStudyTime
+        );
     });
 
     return (
@@ -23,11 +55,15 @@ function HomePage() {
 
             <h1>勉強仲間を探す</h1>
 
-            <SearchForm onSearch={setSearchKeyword}/>  // SearchFormコンポーネントにonSearchプロパティとしてsetSearchKeyword関数を渡す
+            <SearchForm onSearch={handleSearch} />
 
-            {filteredUsers.map((user) => (
-                <UserCard key={user.id} user={user} />
-            ))}
+            {filteredUsers.length > 0 ? (
+                filteredUsers.map((user) => (
+                    <UserCard key={user.id} user={user} />
+                ))
+            ) : (
+                <p>条件に一致するユーザーが見つかりませんでした。</p>
+            )}
         </div>
     );
 }

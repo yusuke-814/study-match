@@ -9,7 +9,7 @@ export const mockUsers: User[] = [
         bio: "AWSとPythonを勉強しています。一緒に勉強できる方を探しています！",
         avatarUrl: "https://i.pravatar.cc/300?img=12",
         studyFields: ["AWS", "Python"],
-        studyTime: "平日 20:00〜23:00",
+        studyTime: "平日夜",
         goal: "AWS SAA取得",
     },
     {
@@ -20,7 +20,7 @@ export const mockUsers: User[] = [
     bio: "Reactを勉強中です。休日に一緒に勉強できる方を探しています。",
     avatarUrl: "https://i.pravatar.cc/300?img=47",
     studyFields: ["React", "TypeScript"],
-    studyTime: "土日",
+    studyTime: "休日",
     goal: "Webエンジニア転職",
   },
   {
@@ -31,7 +31,7 @@ export const mockUsers: User[] = [
     bio: "資格取得に向けて毎日勉強しています。",
     avatarUrl: "https://i.pravatar.cc/300?img=33",
     studyFields: ["Java", "AWS"],
-    studyTime: "平日 19:00〜22:00",
+    studyTime: "平日夜",
     goal: "資格取得",
   },
 ];
