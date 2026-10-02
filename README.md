@@ -917,6 +917,7 @@ function SearchForm({ onSearch }: SearchFormProps) {
       <button type="submit">検索</button>
     </form>
   );
+  
 }
 
 export default SearchForm;
@@ -1023,3 +1024,407 @@ function HomePage() {
 }
 
 export default HomePage;
+
+＜STEP6＞
+まず、
+
+src/components/SearchForm.tsx
+
+を開いてください。
+まず、
+
+const [keyword, setKeyword] = useState("");
+
+に加えて、
+
+const [studyField, setStudyField] = useState("");
+const [location, setLocation] = useState("");
+const [studyTime, setStudyTime] = useState("");
+
+を追加します。
+
+つまり、
+
+const [keyword, setKeyword] = useState("");
+const [studyField, setStudyField] = useState("");
+const [location, setLocation] = useState("");
+const [studyTime, setStudyTime] = useState("");
+
+となります。
+
+現在、
+
+type SearchFormProps = {
+  onSearch: (keyword: string) => void;
+};
+
+となっています。
+
+これでは検索キーワードしか親に渡せません。
+
+今回は4つの値を渡したいので、
+
+type SearchFormProps = {
+  onSearch: (
+    keyword: string,
+    studyField: string,
+    location: string,
+    studyTime: string
+  ) => void;
+};
+
+に変更します。
+
+現在、
+
+onSearch(keyword);
+
+となっています。
+
+これを、
+
+onSearch(keyword, studyField, location, studyTime);
+
+に変更します。
+
+次にフォームの画面を作ります。
+
+今、
+
+<input
+  type="text"
+  placeholder="勉強したい分野を入力"
+  value={keyword}
+  onChange={(event) => setKeyword(event.target.value)}
+/>
+
+があります。
+
+その下に、勉強分野のselectを追加します。
+
+<select
+  value={studyField}
+  onChange={(event) => setStudyField(event.target.value)}
+>
+  <option value="">すべての分野</option>
+  <option value="AWS">AWS</option>
+  <option value="Python">Python</option>
+  <option value="React">React</option>
+  <option value="TypeScript">TypeScript</option>
+  <option value="Java">Java</option>
+</select>
+
+次に地域です。
+
+<select
+  value={location}
+  onChange={(event) => setLocation(event.target.value)}
+>
+  <option value="">すべての地域</option>
+  <option value="東京">東京</option>
+  <option value="横浜">横浜</option>
+</select>
+
+勉強時間selectを追加
+
+同じように、
+
+<select
+  value={studyTime}
+  onChange={(event) => setStudyTime(event.target.value)}
+>
+  <option value="">すべての時間帯</option>
+  <option value="平日夜">平日夜</option>
+  <option value="休日">休日</option>
+</select>
+
+とします。
+
+mockUsers.tsを開き、
+
+山田さん：
+
+studyTime: "平日夜",
+
+佐藤さん：
+
+studyTime: "休日",
+
+鈴木さん：
+
+studyTime: "平日夜",
+
+に変更してください。
+
+
+
+次は親である、
+
+src/pages/HomePage.tsx
+
+です。
+
+現在は、
+
+const [searchKeyword, setSearchKeyword] = useState("");
+
+があります。
+
+これを、
+
+const [searchKeyword, setSearchKeyword] = useState("");
+const [searchStudyField, setSearchStudyField] = useState("");
+const [searchLocation, setSearchLocation] = useState("");
+const [searchStudyTime, setSearchStudyTime] = useState("");
+
+にします。
+
+今回は、
+
+<SearchForm onSearch={setSearchKeyword} />
+
+では対応できません。
+
+4つの値を受け取る必要があるからです。
+
+そこで、
+
+const handleSearch = (
+  keyword: string,
+  studyField: string,
+  location: string,
+  studyTime: string
+) => {
+  setSearchKeyword(keyword);
+  setSearchStudyField(studyField);
+  setSearchLocation(location);
+  setSearchStudyTime(studyTime);
+};
+
+という関数を作ります。
+
+<SearchForm onSearch={setSearchKeyword} />
+
+でしたが、
+
+<SearchForm onSearch={handleSearch} />
+
+に変更します。
+
+今まで、
+
+const filteredUsers = mockUsers.filter((user) => {
+  if (searchKeyword === "") {
+    return true;
+  }
+
+  return user.studyFields.some((field) =>
+    field.toLowerCase().includes(searchKeyword.toLowerCase())
+  );
+});
+
+でした。
+
+これを複数条件に対応させます。
+
+const filteredUsers = mockUsers.filter((user) => {
+  const matchesKeyword =
+    searchKeyword === "" ||
+    user.studyFields.some((field) =>
+      field.toLowerCase().includes(searchKeyword.toLowerCase())
+    );
+
+  const matchesStudyField =
+    searchStudyField === "" ||
+    user.studyFields.includes(searchStudyField);
+
+  const matchesLocation =
+    searchLocation === "" ||
+    user.location === searchLocation;
+
+  const matchesStudyTime =
+    searchStudyTime === "" ||
+    user.studyTime === searchStudyTime;
+
+  return (
+    matchesKeyword &&
+    matchesStudyField &&
+    matchesLocation &&
+    matchesStudyTime
+  );
+});
+
+＜STEP７＞
+UserCard.cssを作る
+
+まず、
+
+src/
+└── components/
+    ├── Header.tsx
+    ├── Header.css
+    ├── SearchForm.tsx
+    ├── UserCard.tsx
+    └── UserCard.css       ← これを作る
+
+という状態にします。
+
+VS Codeで、
+
+src/components/UserCard.css
+
+を作ってください。
+
+まず一番上に、
+
+import "./UserCard.css";
+
+を追加します。
+
+次に、UserCardを以下に置き換えてください。
+
+import type { User } from "../types/User";
+import "./UserCard.css";
+
+type UserCardProps = {
+  user: User;
+};
+
+function UserCard({ user }: UserCardProps) {
+  return (
+    <article className="user-card">
+      <div className="user-card-header">
+        <img
+          className="user-avatar"
+          src={user.avatarUrl}
+          alt={`${user.name}のプロフィール画像`}
+        />
+
+        <div className="user-basic-info">
+          <h2>{user.name}</h2>
+
+          <p>
+            {user.age}歳 · {user.location}
+          </p>
+        </div>
+      </div>
+
+      <div className="user-tags">
+        {user.studyFields.map((field) => (
+          <span className="study-tag" key={field}>
+            {field}
+          </span>
+        ))}
+      </div>
+
+      <p className="user-bio">{user.bio}</p>
+
+      <div className="user-details">
+        <p>🕐 {user.studyTime}</p>
+        <p>🎯 {user.goal}</p>
+      </div>
+
+      <div className="user-card-actions">
+        <button className="profile-button">
+          プロフィールを見る
+        </button>
+
+        <button className="like-button">
+          ♡
+        </button>
+      </div>
+    </article>
+  );
+}
+
+export default UserCard;
+
+UserCardの中を、
+
+UserCard
+│
+├── user-card-header
+│   ├── user-avatar
+│   └── user-basic-info
+│       ├── 名前
+│       └── 年齢・地域
+│
+├── user-tags
+│   ├── AWS
+│   └── Python
+│
+├── user-bio
+│
+├── user-details
+│   ├── 勉強時間
+│   └── 目標
+│
+└── user-card-actions
+    ├── プロフィールを見る
+    └── ♡
+
+    CSSは、この構造に対して、
+
+.user-card
+.user-card-header
+.user-avatar
+.user-basic-info
+.user-tags
+.study-tag
+.user-bio
+.user-details
+.user-card-actions
+
+それぞれにデザインを適用します。
+
+では UserCard.css を開いてください。
+
+まず、
+
+.user-card {
+  width: 100%;
+  max-width: 500px;
+
+  padding: 24px;
+  margin-bottom: 20px;
+
+  background-color: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+
+  box-sizing: border-box;
+}
+
+とします。
+
+次に、
+
+.user-card-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+とします。
+
+ここで初めて本格的に Flexbox を使います。
+
+display: flex;
+
+を指定すると、
+
+画像   名前
+
+と横方向に並べられます。
+
+つまり、
+
+.user-card-header {
+  display: flex;
+}
+
+は、
+
+この中の要素をFlexboxでレイアウトする
+
+という意味です。

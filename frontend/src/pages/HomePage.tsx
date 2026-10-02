@@ -3,6 +3,7 @@ import UserCard from "../components/UserCard";
 import Header from "../components/Header";
 import SearchForm from "../components/SearchForm";
 import { useState } from "react";
+import "./HomePage.css";
 
 function HomePage() {
     const [searchKeyword, setSearchKeyword] = useState("");
@@ -57,13 +58,15 @@ function HomePage() {
 
             <SearchForm onSearch={handleSearch} />
 
-            {filteredUsers.length > 0 ? (
-                filteredUsers.map((user) => (
-                    <UserCard key={user.id} user={user} />
-                ))
-            ) : (
-                <p>条件に一致するユーザーが見つかりませんでした。</p>
-            )}
+            <div className="user-list">
+                {filteredUsers.length > 0 ? (
+                    filteredUsers.map((user) => (
+                        <UserCard key={user.id} user={user} />
+                    ))
+                ) : (
+                    <p>条件に一致するユーザーが見つかりませんでした。</p>
+                )}
+            </div>
         </div>
     );
 }

@@ -1,4 +1,5 @@
 import type { User } from '../types/User';
+import "./UserCard.css";
 
 type UserCardProps = {
     user: User;
@@ -6,34 +7,48 @@ type UserCardProps = {
 
 function UserCard({ user }: UserCardProps) {
     return (
-        <div>
-            <img
-                src={user.avatarUrl}
-                alt={`${user.name}のプロフィール画像`}
-                width="100"
-            />
+        <article className="user-card">
+            <div className="user-card-header">
+                <img
+                    className="user-avatar"
+                    src={user.avatarUrl}
+                    alt={`${user.name}のプロフィール画像`}
+                />
 
-            <h2>{user.name}</h2>
+                <div className="user-basic-info">
+                    <h2>{user.name}</h2>
 
-            <p>
-                {user.age}歳 / {user.location}
-            </p>
+                    <p>
+                        {user.age}歳 ・ {user.location}
+                    </p>
+                </div>
+            </div>
 
-            <p>{user.bio}</p>
-
-            <div>
+            <div className="user-tags">
                 {user.studyFields.map((field) => (
-                    <span key={field}>{field}</span>
+                    <span className="study-tag" key={field}>
+                        {field}
+                    </span>
                 ))}
             </div>
 
-            <p>勉強時間: {user.studyTime}</p>
+            <p className="user-bio">{user.bio} </p>
 
-            <p>目標: {user.goal}</p>
+            <div className="user-details">
+                <p>🕐 {user.studyTime}</p>
+                <p>🎯 {user.goal}</p>
+            </div>
+            
+            <div className="user-card-actions">
+                <button className="profile-button">
+                    プロフィールを見る
+                </button>
 
-            <button>プロフィールを見る</button>
-            <button>気になる</button>
-        </div>
+                <button className="like-button">
+                    ♥
+                </button>
+            </div>
+        </article>
     );
 }
 
