@@ -10,6 +10,7 @@ function Header() {
                 <Link to="/">探す</Link>
                 <Link to="/matches">マッチング</Link>
                 <Link to="/profile">プロフィール</Link>
+                <Link to="/likes">いいね一覧</Link>
             </nav>
         </header>
     );

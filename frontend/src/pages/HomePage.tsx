@@ -4,13 +4,14 @@ import Header from "../components/Header";
 import SearchForm from "../components/SearchForm";
 import { useState } from "react";
 import "./HomePage.css";
+import { useLike } from "../context/LikeContext";
 
 function HomePage() {
+    const { likedUserIds, toggleLike } = useLike();
     const [searchKeyword, setSearchKeyword] = useState("");
     const [searchStudyField, setSearchStudyField] = useState("");
     const [searchLocation, setSearchLocation] = useState("");
     const [searchStudyTime, setSearchStudyTime] = useState("");
-    const [likedUserIds, setLikedUserIds] = useState<number[]>([]);
 
     const handleSearch = (
         keyword: string,
@@ -51,16 +52,6 @@ function HomePage() {
         );
     });
 
-    const handleLike = (userId: number) => {
-        setLikedUserIds((currentIds) => {
-            if (currentIds.includes(userId)) {
-                return currentIds.filter((id) => id !== userId);
-            } else {
-                return [...currentIds, userId];
-            }
-        });
-    };
-
     return (
         <div>
             <Header />
@@ -76,7 +67,7 @@ function HomePage() {
                             key={user.id}
                             user={user}
                             isLiked={likedUserIds.includes(user.id)}
-                            onLike={handleLike}
+                            onLike={toggleLike}
                         />
                     ))
                 ) : (

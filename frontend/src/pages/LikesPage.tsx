@@ -1,15 +1,14 @@
-import { mockLikes } from "../data/mockLikes";
 import { mockUsers } from "../data/mockUsers";
 import UserCard from "../components/UserCard";
 import Header from "../components/Header";
+import { useLike } from "../context/LikeContext";
 
 function LikesPage() {
-    const myUserId = 1;
+    const { likedUserIds, toggleLike } = useLike();
 
-    const likedUsers = mockLikes
-        .filter((like) => like.fromUserId === myUserId)
-        .map((like) =>
-            mockUsers.find((user) => user.id === like.toUserId)
+    const likedUsers = likedUserIds
+        .map((userId) =>
+            mockUsers.find((user) => user.id === userId)
         )
         .filter((user) => user !== undefined);
     
@@ -22,7 +21,12 @@ function LikesPage() {
             <div className="user-list">
                 {likedUsers.length > 0 ? (
                     likedUsers.map((user) => (
-                        <UserCard key={user.id} user={user} />
+                        <UserCard
+                            key={user.id}
+                            user={user}
+                            isLiked={likedUserIds.includes(user.id)}
+                            onLike={toggleLike}
+                        />
                     ))
                 ) : (
                     <p>いいねしたユーザーはいません。</p>

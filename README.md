@@ -2120,3 +2120,584 @@ React
 でシミュレーションしています。
 
 この考え方はかなり重要です。
+
+いいね一覧ページを作る
+
+次に、
+
+frontend/src/pages/
+
+に、
+
+LikesPage.tsx
+
+を作ります。
+
+まずは簡単なところから作ります。
+
+import { mockLikes } from "../data/mockLikes";
+import { mockUsers } from "../data/mockUsers";
+import UserCard from "../components/UserCard";
+import Header from "../components/Header";
+
+function LikesPage() {
+  const myUserId = 1;
+
+  const likedUsers = mockLikes
+    .filter((like) => like.fromUserId === myUserId)
+    .map((like) =>
+      mockUsers.find((user) => user.id === like.toUserId)
+    )
+    .filter((user) => user !== undefined);
+
+  return (
+    <div>
+      <Header />
+
+      <h1>いいね一覧</h1>
+
+      <div className="user-list">
+        {likedUsers.length > 0 ? (
+          likedUsers.map((user) => (
+            <UserCard key={user.id} user={user} />
+          ))
+        ) : (
+          <p>いいねしたユーザーはいません。</p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+export default LikesPage;
+
+React Routerに追加
+
+次に、
+
+frontend/src/App.tsx
+
+を開きます。
+
+現在、
+
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+
+などがあると思います。
+
+ここに、
+
+import LikesPage from "./pages/LikesPage";
+
+を追加します。
+
+そしてRoutesの中に、
+
+<Route path="/likes" element={<LikesPage />} />
+
+を追加します。
+
+＜STEP11＞
+今まで：
+
+UserCard
+  └── isLiked
+
+でした。
+
+これを、
+
+HomePage
+  └── likedUserIds
+        ├── UserCard
+        └── ...
+
+にします。
+
+つまり、
+
+UserCard自身が「誰にいいねしたか」を決めるのではなく、HomePageが管理するようにします。
+HomePageにいいね状態を移す
+
+まず、
+
+frontend/src/pages/HomePage.tsx
+
+を開いてください。
+
+現在、useStateを使って検索条件を管理しています。
+
+そこに、
+
+const [likedUserIds, setLikedUserIds] = useState<number[]>([]);
+
+を追加します。
+
+同じくHomePage.tsxに、
+
+const handleLike = (userId: number) => {
+  setLikedUserIds((currentIds) => {
+    if (currentIds.includes(userId)) {
+      return currentIds.filter((id) => id !== userId);
+    }
+
+    return [...currentIds, userId];
+  });
+};
+
+を追加してください。
+
+現在、
+
+<UserCard key={user.id} user={user} />
+
+となっていると思います。
+
+これを、
+
+<UserCard
+  key={user.id}
+  user={user}
+  isLiked={likedUserIds.includes(user.id)}
+  onLike={handleLike}
+/>
+
+に変更します。
+
+UserCardのPropsを変更する
+
+次に、
+
+frontend/src/components/UserCard.tsx
+
+を開きます。
+
+現在、
+
+type UserCardProps = {
+  user: User;
+};
+
+となっていると思います。
+
+これを、
+
+type UserCardProps = {
+  user: User;
+  isLiked: boolean;
+  onLike: (userId: number) => void;
+};
+
+に変更します。
+
+今まで、
+
+const [isLiked, setIsLiked] = useState(false);
+
+としていました。
+
+これは削除してください。
+
+もうUserCard自身は状態を管理しません。
+
+また、
+
+import { useState } from "react";
+
+も不要になるので削除します。
+
+ボタンを変更
+
+今まで、
+
+<button
+  className="like-button"
+  onClick={() => setIsLiked(!isLiked)}
+>
+  {isLiked ? "♥" : "♡"}
+</button>
+
+でした。
+
+これを、
+
+<button
+  className="like-button"
+  onClick={() => onLike(user.id)}
+>
+  {isLiked ? "♥" : "♡"}
+</button>
+
+にします。
+
+UserCardの冒頭はこうなる
+import { useNavigate } from "react-router-dom";
+import type { User } from "../types/User";
+import "./UserCard.css";
+
+type UserCardProps = {
+  user: User;
+  isLiked: boolean;
+  onLike: (userId: number) => void;
+};
+
+function UserCard({ user, isLiked, onLike }: UserCardProps) {
+  const navigate = useNavigate();
+
+となります。
+
+ここまでやると、
+
+HomePage
+  ↓
+likedUserIds
+
+は正しく管理できます。
+
+しかし、
+
+HomePage
+
+から、
+
+LikesPage
+
+へ移動するとどうでしょう？
+
+LikesPageは、
+
+HomePageのlikedUserIds
+
+を知りません。
+
+つまり、
+
+HomePage
+likedUserIds = [2, 3]
+
+       ↓ ページ移動
+
+LikesPage
+likedUserIds = ????
+
+となります。
+
+これが**「ページをまたいで状態を共有する」**という次の課題です。
+
+そこで次の段階へ
+
+この問題を解決する方法はいくつかあります。
+
+① Context API
+② Zustand
+③ Redux
+④ URL
+⑤ localStorage
+⑥ バックエンド/API
+
+今回のStudy Matchでは、まずReact標準機能を理解したいので、次はContext APIを使うのがおすすめです。
+
+最終的に、
+
+                    LikeContext
+                       │
+          ┌────────────┼────────────┐
+          ↓            ↓            ↓
+      HomePage     LikesPage    UserProfilePage
+          │
+          ↓
+      UserCard
+
+のようにして、
+
+アプリ全体で「誰にいいねしたか」を共有
+
+できるようにします。
+
+その上で、
+
+LikeContext
+     ↓
+モックAPI
+     ↓
+POST /likes
+
+と接続すれば、
+
+状態管理とAPI通信を分離する
+
+という、かなり実務に近い構成になります。
+
+＜STEP12＞
+Context用のフォルダを作る
+
+まず、
+
+frontend/src
+
+の中に、
+
+context
+
+というフォルダを作ってください。
+
+LikeContext.tsxを作る
+
+次に、
+
+frontend/src/context/LikeContext.tsx
+
+を作ってください。
+
+中身は一旦これをそのまま入れてください。
+
+import { createContext, useContext, useState } from "react";
+
+type LikeContextType = {
+    likedUserIds: number[];
+    toggleLike: (userId: number) => void;
+};
+
+const LikeContext = createContext<LikeContextType | undefined>(undefined);
+
+export function LikeProvider({ children }: { children: React.ReactNode }) {
+    const [likedUserIds, setLikedUserIds] = useState<number[]>([]);
+
+    const toggleLike = (userId: number) => {
+        setLikedUserIds((currentIds) => {
+            if (currentIds.includes(userId)) {
+                return currentIds.filter((id) => id !== userId);
+            } else {
+                return [...currentIds, userId];
+            }
+        });
+    };
+
+    return (
+        <LikeContext.Provider value={{ likedUserIds, toggleLike }}>
+            {children}
+        </LikeContext.Provider>
+    );
+}
+
+export function useLike() {
+    const context = useContext(LikeContext);
+
+    if (!context) {
+        throw new Error("useLike must be used within LikeProvider");
+    }
+
+    return context;
+}
+
+次に、
+
+frontend/src/App.tsx
+
+を開いてください。
+
+現在おそらく、
+
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+
+などがあると思います。
+
+そこに、
+
+import { LikeProvider } from "./context/LikeContext";
+
+を追加します。
+
+そして、
+
+function App() {
+    return (
+        <BrowserRouter>
+            <Routes>
+                ...
+            </Routes>
+        </BrowserRouter>
+    );
+}
+
+となっている部分を、
+
+function App() {
+    return (
+        <BrowserRouter>
+            <LikeProvider>
+                <Routes>
+                    {/* 今までのRoute */}
+                </Routes>
+            </LikeProvider>
+        </BrowserRouter>
+    );
+}
+
+としてください。
+
+HomePageからいいね状態を移動する
+
+ここが今回一番重要です。
+
+今の HomePage.tsxには、
+
+const [likedUserIds, setLikedUserIds] = useState<number[]>([]);
+
+があります。
+
+これは削除します。
+
+さらに、
+
+const handleLike = (userId: number) => {
+    setLikedUserIds((currentIds) => {
+        if (currentIds.includes(userId)) {
+            return currentIds.filter((id) => id !== userId);
+        } else {
+            return [...currentIds, userId];
+        }
+    });
+};
+
+も削除します。
+
+なぜなら、これらを LikeContext側に移したからです。
+
+HomePageでContextを使う
+
+HomePage.tsxのimportに、
+
+import { useLike } from "../context/LikeContext";
+
+を追加します。
+
+そして、
+
+function HomePage() {
+
+のすぐ下あたりに、
+
+const { likedUserIds, toggleLike } = useLike();
+
+を追加します。
+
+つまり、
+
+function HomePage() {
+    const { likedUserIds, toggleLike } = useLike();
+
+    const [searchKeyword, setSearchKeyword] = useState("");
+    ...
+
+となります。
+
+UserCardに渡す部分を変更
+
+現在、
+
+<UserCard
+    key={user.id}
+    user={user}
+    isLiked={likedUserIds.includes(user.id)}
+    onLike={handleLike}
+/>
+
+となっていますね。
+
+ここを、
+
+<UserCard
+    key={user.id}
+    user={user}
+    isLiked={likedUserIds.includes(user.id)}
+    onLike={toggleLike}
+/>
+
+に変更します。
+
+LikesPageを変更する
+
+現在、
+
+import { mockLikes } from "../data/mockLikes";
+import { mockUsers } from "../data/mockUsers";
+import UserCard from "../components/UserCard";
+import Header from "../components/Header";
+
+ですが、
+
+import { mockUsers } from "../data/mockUsers";
+import UserCard from "../components/UserCard";
+import Header from "../components/Header";
+import { useLike } from "../context/LikeContext";
+
+にします。
+
+likedUsersをContextから作る
+
+LikesPageの中で、
+
+const { likedUserIds, toggleLike } = useLike();
+
+を追加します。
+
+そして、
+
+const myUserId = 1;
+
+は今回もう必要ありません。
+
+その代わり、
+
+const likedUsers = likedUserIds
+    .map((userId) =>
+        mockUsers.find((user) => user.id === userId)
+    )
+    .filter((user) => user !== undefined);
+
+とします。
+
+完成したLikesPage
+
+一度全部書くとこうです。
+
+import { mockUsers } from "../data/mockUsers";
+import UserCard from "../components/UserCard";
+import Header from "../components/Header";
+import { useLike } from "../context/LikeContext";
+
+function LikesPage() {
+    const { likedUserIds, toggleLike } = useLike();
+
+    const likedUsers = likedUserIds
+        .map((userId) =>
+            mockUsers.find((user) => user.id === userId)
+        )
+        .filter((user) => user !== undefined);
+
+    return (
+        <div>
+            <Header />
+
+            <h1>いいね一覧</h1>
+
+            <div className="user-list">
+                {likedUsers.length > 0 ? (
+                    likedUsers.map((user) => (
+                        <UserCard
+                            key={user.id}
+                            user={user}
+                            isLiked={likedUserIds.includes(user.id)}
+                            onLike={toggleLike}
+                        />
+                    ))
+                ) : (
+                    <p>いいねしたユーザーはいません。</p>
+                )}
+            </div>
+        </div>
+    );
+}
+
+export default LikesPage;
