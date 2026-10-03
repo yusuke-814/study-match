@@ -1254,7 +1254,7 @@ const filteredUsers = mockUsers.filter((user) => {
   );
 });
 
-＜STEP７＞
+＜STEP7＞
 UserCard.cssを作る
 
 まず、
@@ -1428,3 +1428,522 @@ display: flex;
 この中の要素をFlexboxでレイアウトする
 
 という意味です。
+
+続いて、
+
+.user-avatar {
+  width: 72px;
+  height: 72px;
+
+  border-radius: 50%;
+
+  object-fit: cover;
+}
+
+とします。
+
+名前部分
+.user-basic-info h2 {
+  margin: 0 0 6px;
+  font-size: 20px;
+}
+
+.user-basic-info p {
+  margin: 0;
+  color: #6b7280;
+}
+
+これで、
+
+山田太郎
+24歳 · 東京
+
+という感じになります。
+
+タグをFlexboxにする
+
+次に、
+
+.user-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+
+  margin-top: 20px;
+}
+
+とします。
+
+ここでもFlexboxです。
+
+例えば、
+
+AWS
+Python
+React
+TypeScript
+Java
+
+があった場合、
+
+[AWS] [Python] [React]
+[TypeScript] [Java]
+
+のように折り返せます。
+
+そのため、
+
+flex-wrap: wrap;
+
+を使っています。
+
+タグそのものをデザインする
+.study-tag {
+  padding: 6px 12px;
+
+  background-color: #eef2ff;
+  border-radius: 999px;
+
+  font-size: 14px;
+  color: #4338ca;
+}
+
+自己紹介文
+.user-bio {
+  margin: 20px 0;
+
+  line-height: 1.7;
+  color: #374151;
+}
+
+ボタンを横並びにする
+
+最後に、
+
+.user-card-actions {
+  display: flex;
+  gap: 10px;
+
+  margin-top: 20px;
+}
+
+プロフィールボタン
+.profile-button {
+  flex: 1;
+
+  padding: 12px 16px;
+
+  border: none;
+  border-radius: 8px;
+
+  background-color: #2563eb;
+  color: white;
+
+  font-size: 14px;
+  cursor: pointer;
+}
+
+プロフィールボタンを、
+
+flex: 1;
+
+にすると、
+
+┌──────────────────────┬────┐
+│ プロフィールを見る   │ ♡  │
+└──────────────────────┴────┘
+
+のように、余った幅をプロフィールボタンが使います。
+
+Likeボタン
+.like-button {
+  width: 48px;
+
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+
+  background-color: white;
+
+  font-size: 22px;
+  cursor: pointer;
+}
+
+hoverを追加
+
+Webサービスっぽくするために、ボタンにマウスを乗せたときの変化を追加します。
+
+.profile-button:hover {
+  opacity: 0.9;
+}
+
+.like-button:hover {
+  background-color: #f3f4f6;
+}
+
+UserCard一覧を囲む
+
+HomePage.tsx の、
+
+{filteredUsers.map((user) => (
+  <UserCard key={user.id} user={user} />
+))}
+
+を、
+
+<div className="user-list">
+  {filteredUsers.map((user) => (
+    <UserCard key={user.id} user={user} />
+  ))}
+</div>
+
+に変更します。
+
+0件の場合も含めるなら、
+
+<div className="user-list">
+  {filteredUsers.length > 0 ? (
+    filteredUsers.map((user) => (
+      <UserCard key={user.id} user={user} />
+    ))
+  ) : (
+    <p>条件に一致するユーザーが見つかりませんでした。</p>
+  )}
+</div>
+
+です。
+
+HomePage.cssを作る
+
+次に、
+
+src/pages/HomePage.css
+
+を作ります。
+
+そして、
+
+.user-list {
+  display: grid;
+
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+
+  gap: 20px;
+
+  max-width: 1040px;
+  margin: 30px auto;
+}
+
+とします。
+
+HomePage.tsxの上部に、
+
+import "./HomePage.css";
+
+を追加します。
+
+スマホ対応
+
+ここでWeb開発では重要なレスポンシブ対応を入れます。
+
+HomePage.cssの下に、
+
+@media (max-width: 768px) {
+  .user-list {
+    grid-template-columns: 1fr;
+    margin: 20px 16px;
+  }
+}
+
+を追加してください。
+
+＜STEP8＞
+
+UserCard.tsxを変更する
+
+まず、
+
+frontend/src/components/UserCard.tsx
+
+を開いてください。
+
+現在の先頭は、
+
+import type { User } from "../types/User";
+import "./UserCard.css";
+
+になっていると思います。
+
+ここにReactのuseStateを追加します。
+
+import { useState } from "react";
+import type { User } from "../types/User";
+import "./UserCard.css";
+
+いいね状態を作る
+
+次に、
+
+function UserCard({ user }: UserCardProps) {
+
+の直後に、
+
+const [isLiked, setIsLiked] = useState(false);
+
+を追加します。
+
+♡ボタンに処理を追加する
+
+現在、
+
+<button className="like-button">
+  ♡
+</button>
+
+となっています。
+
+これを、
+
+<button
+  className="like-button"
+  onClick={() => setIsLiked(!isLiked)}
+>
+  {isLiked ? "♥" : "♡"}
+</button>
+
+に変更してください。
+
+最終的に、今回の変更後はこうなります。
+
+import { useState } from "react";
+import type { User } from "../types/User";
+import "./UserCard.css";
+
+type UserCardProps = {
+  user: User;
+};
+
+function UserCard({ user }: UserCardProps) {
+  const [isLiked, setIsLiked] = useState(false);
+
+  return (
+    <article className="user-card">
+      <div className="user-card-header">
+        <img
+          className="user-avatar"
+          src={user.avatarUrl}
+          alt={`${user.name}のプロフィール画像`}
+        />
+
+        <div className="user-basic-info">
+          <h2>{user.name}</h2>
+
+          <p>
+            {user.age}歳 · {user.location}
+          </p>
+        </div>
+      </div>
+
+      <div className="user-tags">
+        {user.studyFields.map((field) => (
+          <span className="study-tag" key={field}>
+            {field}
+          </span>
+        ))}
+      </div>
+
+      <p className="user-bio">{user.bio}</p>
+
+      <div className="user-details">
+        <p>🕐 {user.studyTime}</p>
+        <p>🎯 {user.goal}</p>
+      </div>
+
+      <div className="user-card-actions">
+        <button
+          className="profile-button"
+          onClick={() => navigate(`/users/${user.id}`)}
+        >
+          プロフィールを見る
+        </button>
+
+        <button
+          className="like-button"
+          onClick={() => setIsLiked(!isLiked)}
+        >
+          {isLiked ? "♥" : "♡"}
+        </button>
+      </div>
+    </article>
+  );
+}
+
+export default UserCard;
+
+ただし、ここで1点注意です。
+
+このコードには現在、
+
+navigate(...)
+
+があるので、以前作ったuseNavigateの設定が残っている必要があります。
+
+もし現在のファイルが、
+
+const navigate = useNavigate();
+
+をすでに持っているなら、そのままでOKです。
+
+もしエラーになる場合は、先頭に
+
+import { useNavigate } from "react-router-dom";
+
+を追加し、
+
+function UserCard({ user }: UserCardProps) {
+  const navigate = useNavigate();
+  const [isLiked, setIsLiked] = useState(false);
+
+としてください。
+
+＜STEP9＞
+
+FastAPIにモックAPIを作る
+
+まず、
+
+backend/main.py
+
+を開いてください。
+
+現在はおそらく、
+
+from fastapi import FastAPI
+
+app = FastAPI()
+
+
+@app.get("/")
+def read_root():
+    return {"message": "Study Match API"}
+
+ですよね。
+
+ここにPOST APIを追加します。
+
+こうしてください
+from fastapi import FastAPI
+
+app = FastAPI()
+
+
+@app.get("/")
+def read_root():
+    return {"message": "Study Match API"}
+
+
+@app.post("/likes")
+def create_like(data: dict):
+    return {
+        "success": True,
+        "message": "いいねしました",
+        "fromUserId": data["fromUserId"],
+        "toUserId": data["toUserId"],
+    }
+
+これだけで、
+
+POST /likes
+
+というAPIができます。
+
+Swaggerで確認する
+
+FastAPIを起動します。
+
+backendフォルダで、
+
+source .venv/Scripts/activate
+
+↓
+
+uvicorn main:app --reload
+
+です。
+
+その状態で、
+
+http://127.0.0.1:8000/docs
+
+を開きます。
+
+すると、
+
+POST
+/likes
+
+が表示されるはずです。
+
+UserCardに組み込む
+
+ここから少しReactらしくなります。
+
+現在の
+
+onClick={() => setIsLiked(!isLiked)}
+
+を、
+
+クリック
+ ↓
+APIにPOST
+ ↓
+レスポンス確認
+ ↓
+成功したらuseState変更
+
+に変えます。
+
+まずUserCardに、
+
+const handleLike = async () => {
+
+という関数を作ります。
+
+UserCard.tsx
+
+UserCardの中を、
+
+function UserCard({ user }: UserCardProps) {
+  const [isLiked, setIsLiked] = useState(false);
+
+  const handleLike = async () => {
+    const response = await fetch("http://127.0.0.1:8000/likes", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        fromUserId: 1,
+        toUserId: user.id,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (data.success) {
+      setIsLiked(true);
+    }
+  };
+
+とします。
+
+そしてボタンを、
+
+<button
+  className="like-button"
+  onClick={handleLike}
+>
+  {isLiked ? "♥" : "♡"}
+</button>
+
+に変更します。

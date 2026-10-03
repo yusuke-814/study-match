@@ -1,3 +1,5 @@
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import type { User } from '../types/User';
 import "./UserCard.css";
 
@@ -6,6 +8,28 @@ type UserCardProps = {
 };
 
 function UserCard({ user }: UserCardProps) {
+    const navigate = useNavigate();
+    const [isLiked, setIsLiked] = useState(false);
+
+    const handleLike = async () => {
+        const response = await fetch("http://127.0.0.1:8000/likes", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",  // リクエストのContent-TypeをJSONに設定
+            },
+            body: JSON.stringify({
+                fromUserId: 1,
+                toUserId: user.id,
+            }),
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            setIsLiked(true);
+        }
+    };
+
     return (
         <article className="user-card">
             <div className="user-card-header">
@@ -40,12 +64,18 @@ function UserCard({ user }: UserCardProps) {
             </div>
             
             <div className="user-card-actions">
-                <button className="profile-button">
+                <button 
+                    className="profile-button"
+                    onClick={() => navigate(`/users/${user.id}`)}
+                >
                     プロフィールを見る
                 </button>
 
-                <button className="like-button">
-                    ♥
+                <button 
+                    className="like-button"
+                    onClick={handleLike}
+                >
+                    {isLiked ? "💖" : "🤍"}
                 </button>
             </div>
         </article>
