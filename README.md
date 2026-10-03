@@ -1947,3 +1947,176 @@ function UserCard({ user }: UserCardProps) {
 </button>
 
 に変更します。
+
+CORS Middlewareを追加
+
+まず、先頭を
+
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
+にします。
+
+app = FastAPI()の直後に、
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+を追加します。
+
+＜STEP10＞
+ここで「モックAPI」をもう一段進化させる
+
+今はFastAPIに、
+
+POST /likes
+
+があります。
+
+次は、
+
+GET /likes
+
+を作る……という方法もあります。
+
+ただし、今回の方針ではFastAPIをモックサーバーとしてどんどん作り込む必要はありません。
+
+むしろフロントエンド学習としては、
+
+src/
+├── data/
+│   ├── mockUsers.ts
+│   └── mockLikes.ts
+
+のようにJSONのモックデータをフロント側に置き、APIレスポンスを想定して扱う方法も非常に有効です。
+
+例えば、
+
+export const mockLikes = [
+  {
+    id: 101,
+    fromUserId: 1,
+    toUserId: 2,
+  },
+  {
+    id: 102,
+    fromUserId: 1,
+    toUserId: 3,
+  },
+];
+
+としておけば、
+
+「APIからこれが返ってきた」
+
+という前提でReactを作れます。
+
+Likeの型を作る
+
+まず、
+
+frontend/src/types/
+
+を開いてください。
+
+ここに、
+
+Like.ts
+
+を新しく作ります。
+
+Like.ts
+export type Like = {
+  id: number;
+  fromUserId: number;
+  toUserId: number;
+};
+
+です。
+
+モックのいいねデータを作る
+
+次に、
+
+frontend/src/data/
+
+に、
+
+mockLikes.ts
+
+を作ります。
+
+中身は、
+
+import type { Like } from "../types/Like";
+
+export const mockLikes: Like[] = [
+  {
+    id: 101,
+    fromUserId: 1,
+    toUserId: 2,
+  },
+  {
+    id: 102,
+    fromUserId: 1,
+    toUserId: 3,
+  },
+];
+
+としてください。
+
+ここで「APIレスポンス」を意識する
+
+実際のAPIなら、
+
+GET /likes
+
+を実行して、
+
+[
+  {
+    "id": 101,
+    "fromUserId": 1,
+    "toUserId": 2
+  },
+  {
+    "id": 102,
+    "fromUserId": 1,
+    "toUserId": 3
+  }
+]
+
+が返ってくる、と考えてください。
+
+今はその代わりに、
+
+mockLikes
+
+を使っているわけです。
+
+つまり、
+
+本番
+
+GET /likes
+ ↓
+JSON
+ ↓
+React
+
+を、
+
+今
+
+mockLikes
+ ↓
+React
+
+でシミュレーションしています。
+
+この考え方はかなり重要です。
