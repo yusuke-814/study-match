@@ -10,6 +10,7 @@ function HomePage() {
     const [searchStudyField, setSearchStudyField] = useState("");
     const [searchLocation, setSearchLocation] = useState("");
     const [searchStudyTime, setSearchStudyTime] = useState("");
+    const [likedUserIds, setLikedUserIds] = useState<number[]>([]);
 
     const handleSearch = (
         keyword: string,
@@ -50,6 +51,16 @@ function HomePage() {
         );
     });
 
+    const handleLike = (userId: number) => {
+        setLikedUserIds((currentIds) => {
+            if (currentIds.includes(userId)) {
+                return currentIds.filter((id) => id !== userId);
+            } else {
+                return [...currentIds, userId];
+            }
+        });
+    };
+
     return (
         <div>
             <Header />
@@ -61,7 +72,12 @@ function HomePage() {
             <div className="user-list">
                 {filteredUsers.length > 0 ? (
                     filteredUsers.map((user) => (
-                        <UserCard key={user.id} user={user} />
+                        <UserCard
+                            key={user.id}
+                            user={user}
+                            isLiked={likedUserIds.includes(user.id)}
+                            onLike={handleLike}
+                        />
                     ))
                 ) : (
                     <p>条件に一致するユーザーが見つかりませんでした。</p>

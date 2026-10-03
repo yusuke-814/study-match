@@ -1,15 +1,16 @@
-import { useState } from "react";
+
 import { useNavigate } from "react-router-dom";
 import type { User } from '../types/User';
 import "./UserCard.css";
 
 type UserCardProps = {
     user: User;
+    isLiked: boolean;
+    onLike: (userId: number) => void;
 };
 
-function UserCard({ user }: UserCardProps) {
+function UserCard({ user, isLiked, onLike }: UserCardProps) {
     const navigate = useNavigate();
-    const [isLiked, setIsLiked] = useState(false);
 
     const handleLike = async () => {
         const response = await fetch("http://127.0.0.1:8000/likes", {
@@ -26,7 +27,8 @@ function UserCard({ user }: UserCardProps) {
         const data = await response.json();
 
         if (data.success) {
-            setIsLiked(true);
+            // setIsLiked(true);
+            onLike(user.id);
         }
     };
 
